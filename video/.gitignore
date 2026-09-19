@@ -5,3 +5,8 @@ dist
 
 # Ignore the output video from Git but not videos you import into src/.
 out
+
+# Source clips uploaded by the user for editing: kept local-only, never
+# pushed to the (public) repo. Remotion still resolves them via
+# staticFile() since they live under public/.
+public/source-clips
