@@ -9,8 +9,12 @@ import {
 } from "remotion";
 
 const FPS = 30;
-const WIDTH = 1280;
-const HEIGHT = 720;
+// Vertical 9:16 for Reels/TikTok/Stories. Source clips are 1280x720
+// landscape; Remotion's default (unstyled) OffthreadVideo sizing already
+// center-crops to cover a differently-shaped frame, so no manual
+// width/height/translate math is needed here.
+const WIDTH = 720;
+const HEIGHT = 1280;
 
 type Beat = {
   file: string;
@@ -58,7 +62,7 @@ const totalDurationInFrames = timeline.reduce((sum, b) => sum + b.durationInFram
 
 const ZoomedVideo: React.FC<{ beat: FlatBeat }> = ({ beat }) => {
   const frame = useCurrentFrame();
-  const scale = interpolate(frame, [0, beat.durationInFrames], [beat.zoomFrom, beat.zoomTo], {
+  const zoom = interpolate(frame, [0, beat.durationInFrames], [beat.zoomFrom, beat.zoomTo], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -70,12 +74,13 @@ const ZoomedVideo: React.FC<{ beat: FlatBeat }> = ({ beat }) => {
         trimBefore={beat.trimBefore}
         playbackRate={beat.playbackRate}
         style={{
-          // Source clips are already 1280x720, matching the composition
-          // exactly, so no width/height/objectFit is needed here. Adding
-          // objectFit: "cover" here triggers a Remotion compositor bug
+          // Leave width/height/objectFit unset -- Remotion's default sizing
+          // already center-crops the 1280x720 source to cover this 720x1280
+          // frame. Setting objectFit here triggers a Remotion compositor bug
           // that serves the wrong video frame entirely (verified via
-          // isolated repro) -- keep this style to just the zoom transform.
-          transform: `scale(${scale})`,
+          // isolated repro), so the zoom punch-in is a plain scale on top
+          // of that default fit.
+          transform: `scale(${zoom})`,
         }}
       />
     </AbsoluteFill>
